@@ -5,25 +5,29 @@ from sklearn.preprocessing import MinMaxScaler
 from keras.models import Sequential
 from keras.layers import LSTM, Dense, Activation
 
-
+#sequence_length=10 切片长度
 def load_data(file_name, sequence_length=10, split=0.8):
     df = pd.read_csv(file_name, sep=',', usecols=[1])   #单独读取一列
     data_all = np.array(df).astype(float)           
-    scaler = MinMaxScaler()
+    scaler = MinMaxScaler()#映射到0,1区间
     # 查看传递参数
-    print('data\n')
-    print(data_all)
-    data_all = scaler.fit_transform(data_all)
-    print('data')
-    print(data_all)#归一化后的数据
+    # print('data\n')
+    # print(data_all)
+    data_all = scaler.fit_transform(data_all)#归一化操作
+    # print('data_all')
+    # print(data_all)#归一化后的数据
     data = []
     for i in range(len(data_all) - sequence_length - 1):
         data.append(data_all[i: i + sequence_length + 1])
     reshaped_data = np.array(data).astype('float64')
-    np.random.shuffle(reshaped_data)
+    np.random.shuffle(reshaped_data)#将数据集随机打乱
     # 对x进行统一归一化，而y则不归一化
-    x = reshaped_data[:, :-1]
+    x = reshaped_data[:, :-1]#用前9个数据预测最后一个
     y = reshaped_data[:, -1]
+    print('x:\n')
+    print(x)
+    print('y:\n')
+    print(y)
     split_boundary = int(reshaped_data.shape[0] * split)
     train_x = x[: split_boundary]
     test_x = x[split_boundary:]
@@ -76,7 +80,7 @@ if __name__ == '__main__':
     train_x = np.reshape(train_x, (train_x.shape[0], train_x.shape[1], 1))
     test_x = np.reshape(test_x, (test_x.shape[0], test_x.shape[1], 1))
     predict_y, test_y = train_model(train_x, train_y, test_x, test_y)
-    predict_y = scaler.inverse_transform([[i] for i in predict_y])
+    predict_y = scaler.inverse_transform([[i] for i in predict_y])      #反归一化
     test_y = scaler.inverse_transform(test_y)
     print('predict_y:\n')
     print(predict_y)
